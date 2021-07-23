@@ -1,0 +1,357 @@
+#include <stdio.h>
+#include <malloc.h>
+#include <string.h>
+#include <ctype.h>
+
+void clearInput(void);
+void addNewstudent(void);
+void listAll(void);
+void deletestudent(void);
+void modifystudent(void);
+int findstudent(void);
+int prompt(void);
+int findnum (int);
+
+typedef struct contact {   
+    int number;
+    char name[20];
+    char fisika[20];   
+    char kimia[20];           
+    char biologi[20];
+    char ekonomi[20];
+    char sejarah[20];
+    char geografi[20];
+    struct contact *next;
+    int count;
+    } Contact;
+Contact *firstc,*currentc,*newc;
+int cnum = 0;
+
+int main()
+{
+    FILE *datafile;
+    char *filename = "reportdatabase.dat";
+    char ch;
+    firstc = NULL;
+    datafile = fopen(filename,"r");
+    
+    if(datafile)	 
+    {
+	    firstc = (struct contact *)malloc(sizeof(struct contact));
+
+	    currentc = firstc;
+	    while(1)
+     	    {
+		    newc = (struct contact *)malloc(sizeof(struct contact));
+		    fread(currentc,sizeof(struct contact),1,datafile);
+		    if(currentc->next == NULL)
+			    break;
+		    currentc->next = newc;
+            currentc->count=0;
+		    currentc = newc;
+	    }
+	    fclose(datafile);
+	    cnum = currentc->number;         
+        
+    }
+        
+    do
+    {
+	fflush(stdin);
+        puts("\nWelcome To The  Studebt Report Database");
+        puts("-- -----------------------------");
+        puts("1 - Add a new Report");     
+	puts("2 - Delete Report");          
+	puts("3 - List all Student Report");       
+	puts("4 - Modify Report");          
+	puts("5 - Find a Student Report by name");  
+	puts("-- -----------------------------");
+        puts("Q - Save and quit\n");         
+        printf("\tYour choice:");            
+        ch = getchar();
+	    ch = toupper(ch);
+        switch(ch)
+        {
+            case '1':
+                puts("Add a new student report\n");
+	        fflush(stdin);
+                addNewstudent();
+                break;
+	    case '2':
+		puts("Delete a Report\n");
+		deletestudent();
+		break;
+	    case '3':
+		puts("List all Student Report\n");
+		listAll();
+		break;
+	    case '4':
+		puts("Modify a Report\n");
+		modifystudent();
+		break;
+	    case '5':
+		puts("Find a Student Report by name\n");
+		findstudent();
+		break;
+            case 'Q':
+                puts("Save and quit\n");
+                default:
+                break;
+        }
+    }
+    while(ch != 'Q');
+
+    currentc = firstc;
+    
+    if(currentc == NULL)
+	    return(0);
+				  
+    datafile = fopen(filename,"w");
+    
+    if(datafile == NULL)
+    {
+	    printf("Error writing to %s\n",filename);
+	    return(1);
+    }
+
+    while(currentc != NULL)
+    {
+	    fwrite(currentc,sizeof(struct contact),1,datafile);
+	    currentc = currentc->next;
+    }
+    fclose(datafile);
+    return(0);
+}
+
+void addNewstudent(void)
+{
+    newc = (struct contact *)malloc(sizeof(struct contact)); 
+
+    if(firstc==NULL)
+        firstc = currentc = newc;
+
+    else
+    {
+        currentc = firstc;
+                                
+        while(currentc->next != NULL)currentc = currentc->next;
+
+        currentc->next = newc;
+        currentc = newc;
+    }
+
+    cnum++;
+    printf("%27s: %5i\n","Student number",cnum);
+    currentc->number = cnum;
+    
+    printf("%27s: ","Enter student name");
+    gets(currentc->name);
+    printf("%27s: ","Enter score fisika");
+    gets(currentc->fisika);
+    printf("%27s: ","Enter score kimia");
+    gets(currentc->kimia);
+    printf("%27s: ","Enter score biologi");
+    gets(currentc->biologi);
+    printf("%27s: ","Enter score ekonomi");
+    gets(currentc->ekonomi);
+    printf("%27s: ","Enter score sejarah");
+    gets(currentc->sejarah);
+    printf("%27s: ","Enter score geografi");
+    gets(currentc->geografi);
+    printf("Student report added!");
+    currentc->count=0;
+
+    currentc->next = NULL;
+}
+
+void listAll(void)
+{
+    if(firstc==NULL)
+        puts("There are no student reports to display!");
+        
+    else
+    {
+	    printf("%6s %-20s %-15s %-15s %-15s %-15s %-15s %-15s\n","Acct#","Name","fisika","kimia","biologi","ekonomi","sejarah","geografi");
+        puts("------ -------------------- -------------  -------------   -------------   -------------   -------------   -------------");   
+    
+        currentc=firstc;
+        
+        do
+        {
+        
+                printf("%6d: %-20s %-15s %-15s %-15s %-15s %-15s %-15s\n",\
+                currentc->number,\
+                currentc->name,\
+                currentc->fisika,\
+                currentc->kimia,\
+                currentc->biologi,\
+                currentc->ekonomi,\
+                currentc->sejarah,\
+                currentc->geografi); 
+
+        }
+        
+        while((currentc=currentc->next) != NULL);
+    }
+}
+
+void deletestudent(void)     
+{
+    int record;
+    struct contact *previousa;
+    if(firstc==NULL)
+    {
+        puts("There are no student reports to delete!");
+	return;
+    }
+    
+    listAll(); 
+    printf("Enter student report number to delete: ");
+    scanf("%d",&record);
+    currentc = firstc;
+    
+    while(currentc != NULL)
+    {
+        if(currentc->number == record)
+	{
+	    if(currentc == firstc)
+		firstc=currentc->next;
+	    else
+		previousa->next = currentc->next;
+        free(currentc); 
+	    printf("student report %d deleted!\n",record);
+	    return;
+	}
+	
+	else
+	{
+        previousa = currentc;
+	    currentc = currentc->next;
+	}
+    }
+    printf("Student report %d not found!\n",record);
+ }
+
+void modifystudent(void)
+{
+    int record, result;
+    if(firstc==NULL)
+    {
+        puts("There are no Student report to modify!");
+	return;
+    }
+    
+    listAll();
+    printf("Enter student report card to modify or change: ");
+    scanf("%d",&record);
+    result = findnum(record);
+    
+    if( result >0 ){
+	    printf("Student report %d:\n",currentc->number);
+	    printf("Name: %s\n",currentc->name);
+	    if(prompt())
+		    gets(currentc->name);
+	    printf("fisika: %s\n",currentc->fisika);
+	    if(prompt())
+		    gets(currentc->fisika);
+		printf("kimia: %s\n",currentc->kimia);
+	    if(prompt())
+		    gets(currentc->kimia);
+		printf("biologi: %s\n",currentc->biologi);
+	    if(prompt())
+		    gets(currentc->biologi);
+	    printf("ekonomi: %s\n",currentc->ekonomi);
+	    if(prompt())
+		    gets(currentc->ekonomi);
+		printf("sejarah: %s\n",currentc->sejarah);
+	    if(prompt())
+		    gets(currentc->sejarah);
+		printf("geografi: %s\n",currentc->geografi);
+	    if(prompt())
+		    gets(currentc->geografi);
+	    return;
+	}
+    printf("student report %d was not found!\n",record);
+}
+
+int findnum (int recordnum)
+{
+    int record;
+    record = recordnum;
+    currentc = firstc;
+    while(currentc != NULL)
+    {
+                   
+        if(currentc->number == record)
+	     {
+           return 1;
+         }
+         
+	else
+	{
+	    currentc = currentc->next;
+	}
+    }
+    return -1;   
+}
+
+int findstudent(void)
+{
+     char buff[20];
+     
+     if(firstc==NULL)
+	{
+        puts("There are no student reports to find!");
+	    return 1;
+    }
+    
+    printf("Enter student name: ");
+    fflush(stdin);
+    gets(buff);
+    
+    currentc = firstc;
+    while(currentc != NULL)
+    {
+        if( strcmp(currentc->name, buff) == 0 )
+	    {
+		printf("%6s %-20s %-15s %-15s %-15s %-15s %-15s %-15s\n","Acct#","Name","fisika","kimia","biologi","ekonomi","sejarah","geografi");
+        puts("------ -------------------- -------------  -------------   -------------   -------------   -------------   -------------");     
+	
+            printf("%6d: %-20s %-15s %-20s %-20s %-15s %-20s %-20s\n",\
+                currentc->number,\
+                currentc->name,\
+                currentc->fisika,\
+                currentc->kimia,\
+                currentc->biologi,\
+                currentc->ekonomi,\
+                currentc->sejarah,\
+                currentc->geografi); 
+          
+			
+			return 0;
+	    }
+		else
+		{
+			currentc = currentc->next;
+		}
+    }
+    printf("student report %s was not found!\n",buff);
+          return 1;
+}   
+
+int prompt(void)
+{
+	char ch;
+    fflush(stdin);
+	printf("Update? (Y to update any other key to not)");
+	ch = getchar();
+	ch = toupper(ch);
+	fflush(stdin);
+	if(ch == 'Y')
+	{
+		printf("Enter new value: ");
+		return(1);
+	}
+	else
+		return(0);
+}
